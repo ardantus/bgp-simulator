@@ -49,6 +49,8 @@ Project ini adalah simulator BIRD BGP router menggunakan Docker Compose untuk pe
 
 - **[QUICKSTART.md](QUICKSTART.md)**: Panduan cepat untuk memulai
 - **[SCENARIOS.md](SCENARIOS.md)**: 10+ skenario pembelajaran BGP dengan contoh lengkap
+- **[TESTING.md](TESTING.md)**: Panduan testing dan verifikasi lengkap
+- **[TOPOLOGY.md](TOPOLOGY.md)**: Diagram dan penjelasan topologi jaringan detail
 
 ## Prerequisites
 
