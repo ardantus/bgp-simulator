@@ -95,6 +95,8 @@ services:
       - bgp-router
     restart: unless-stopped
 
+  # egress1/egress2 removed — restored original topology
+
   client:
     build:
       context: .
@@ -110,6 +112,8 @@ services:
     depends_on:
       - pfrouter
     restart: unless-stopped
+
+  # internet1/internet2 removed
 
 networks:
   isp1_network:
@@ -135,3 +139,5 @@ networks:
     ipam:
       config:
         - subnet: 192.168.200.0/24
+
+  # egress_net, internet1_net, internet2_net removed
