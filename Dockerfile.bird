@@ -26,10 +26,14 @@ EXPOSE 179
 
 # Create a simple entrypoint script
 RUN echo '#!/bin/bash\n\
-sysctl -w net.ipv4.ip_forward=1\n\
-sysctl -w net.ipv6.conf.all.forwarding=1\n\
+if [ -w /proc/sys/net/ipv4/ip_forward ]; then\n\
+    sysctl -w net.ipv4.ip_forward=1 || true\n\
+fi\n\
+if [ -w /proc/sys/net/ipv6/conf/all/forwarding ]; then\n\
+    sysctl -w net.ipv6.conf.all.forwarding=1 || true\n\
+fi\n\
 exec "$@"' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+        chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bird", "-f", "-c", "/etc/bird/bird.conf", "-d"]

@@ -48,14 +48,14 @@ docker compose exec client bash
 
 # Di dalam container client:
 # Test ping ke ISP1
-ping -c 4 10.1.1.1
+ping -c 4 10.1.1.254
 
 # Test ping ke ISP2
-ping -c 4 10.2.2.1
+ping -c 4 10.2.2.254
 
 # Traceroute untuk melihat path
-traceroute -n 10.1.1.1
-traceroute -n 10.2.2.1
+traceroute -n 10.1.1.254
+traceroute -n 10.2.2.254
 
 # Keluar dari container
 exit
@@ -137,11 +137,11 @@ docker compose logs
 ```
 Client (192.168.200.10)
     ↓
-pfRouter (192.168.200.1 / 192.168.100.2)
+pfRouter (192.168.200.254 / 192.168.100.2)
     ↓
-BGP Router (192.168.100.1 / 10.1.1.2 / 10.2.2.2)
+BGP Router (192.168.100.10 / 10.1.1.2 / 10.2.2.2)
     ↓           ↓
-ISP1 (10.1.1.1) ISP2 (10.2.2.1)
+ISP1 (10.1.1.254) ISP2 (10.2.2.254)
 ```
 
 ## Learning Path

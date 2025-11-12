@@ -71,24 +71,24 @@ cd bgp-simulator
 ### 2. Build dan Start Containers
 
 ```bash
-# Build dan jalankan semua containers
-docker-compose up -d
+# Build dan jalankan semua containers (Compose v2)
+docker compose up -d
 
 # Cek status containers
-docker-compose ps
+docker compose ps
 ```
 
 ### 3. Verifikasi Setup
 
 ```bash
 # Cek logs BGP router
-docker-compose logs -f bgp-router
+docker compose logs -f bgp-router
 
 # Cek logs ISP1
-docker-compose logs -f isp1
+docker compose logs -f isp1
 
 # Cek logs ISP2
-docker-compose logs -f isp2
+docker compose logs -f isp2
 ```
 
 ## Cara Menggunakan
@@ -98,7 +98,7 @@ docker-compose logs -f isp2
 #### 1. BGP Router
 ```bash
 # Masuk ke BGP router
-docker-compose exec bgp-router /bin/bash
+docker compose exec bgp-router /bin/bash
 
 # Cek status BIRD
 birdc show status
@@ -116,7 +116,7 @@ birdc show protocols all
 #### 2. ISP1 Router
 ```bash
 # Masuk ke ISP1
-docker-compose exec isp1 /bin/bash
+docker compose exec isp1 /bin/bash
 
 # Cek status BIRD
 birdc show status
@@ -128,7 +128,7 @@ birdc show route
 #### 3. ISP2 Router
 ```bash
 # Masuk ke ISP2
-docker-compose exec isp2 /bin/bash
+docker compose exec isp2 /bin/bash
 
 # Cek status BIRD
 birdc show status
@@ -140,7 +140,7 @@ birdc show route
 #### 4. pfRouter
 ```bash
 # Masuk ke pfRouter
-docker-compose exec pfrouter /bin/bash
+docker compose exec pfrouter /bin/bash
 
 # Cek routing table
 ip route show
@@ -155,7 +155,7 @@ sysctl net.ipv4.ip_forward
 #### 5. Ubuntu Client
 ```bash
 # Masuk ke client
-docker-compose exec client /bin/bash
+docker compose exec client /bin/bash
 
 # Test connectivity dengan traceroute
 traceroute 8.8.8.8
@@ -176,7 +176,7 @@ ip addr show
 
 ```bash
 # Dari BGP router
-docker-compose exec bgp-router birdc show protocols all
+docker compose exec bgp-router birdc show protocols all
 
 # Output yang diharapkan:
 # - Koneksi ke ISP1 (AS65001) status: Established
@@ -187,31 +187,31 @@ docker-compose exec bgp-router birdc show protocols all
 
 ```bash
 # Dari Ubuntu client
-docker-compose exec client traceroute -n 8.8.8.8
+docker compose exec client traceroute -n 8.8.8.8
 
 # Atau traceroute ke IP ISP tertentu
-docker-compose exec client traceroute -n 10.1.1.1  # ISP1
-docker-compose exec client traceroute -n 10.2.2.1  # ISP2
+docker compose exec client traceroute -n 10.1.1.254  # ISP1
+docker compose exec client traceroute -n 10.2.2.254  # ISP2
 ```
 
 ### 3. Simulasi BGP Path Preference
 
 ```bash
 # Matikan BGP session ke ISP1
-docker-compose exec bgp-router birdc disable isp1
+docker compose exec bgp-router birdc disable isp1
 
 # Cek routing sekarang menggunakan ISP2
-docker-compose exec bgp-router birdc show route
+docker compose exec bgp-router birdc show route
 
 # Nyalakan kembali
-docker-compose exec bgp-router birdc enable isp1
+docker compose exec bgp-router birdc enable isp1
 ```
 
 ### 4. Monitor BGP Updates
 
 ```bash
 # Live monitoring BGP updates
-docker-compose exec bgp-router birdc
+docker compose exec bgp-router birdc
 > show route all
 > show protocols all
 > exit
@@ -221,23 +221,26 @@ docker-compose exec bgp-router birdc
 
 ```bash
 # Capture BGP packets di BGP router
-docker-compose exec bgp-router tcpdump -i eth0 -n port 179
+docker compose exec bgp-router tcpdump -i eth0 -n port 179
 
 # Capture semua packets di client
-docker-compose exec client tcpdump -i eth0 -n
+docker compose exec client tcpdump -i eth0 -n
 ```
 
 ## Konfigurasi Network
 
 ### IP Addressing
 
-| Container | Interface | IP Address | Network |
-|-----------|-----------|------------|---------|
-| ISP1 | eth0 | 10.1.1.1/24 | ISP1 Network |
-| ISP2 | eth0 | 10.2.2.1/24 | ISP2 Network |
-| BGP Router | eth0 (ISP1) | 10.1.1.2/24 | ISP1 Network |
-| BGP Router | eth1 (ISP2) | 10.2.2.2/24 | ISP2 Network |
-| BGP Router | eth2 (Internal) | 192.168.100.1/24 | Internal Network |
+| Container   | Interface                  | IP Address        | Network         |
+|-------------|---------------------------|-------------------|-----------------|
+| ISP1        | eth0                      | 10.1.1.254/24     | ISP1 Network    |
+| ISP2        | eth0                      | 10.2.2.254/24     | ISP2 Network    |
+| BGP Router  | eth0 (ISP1)               | 10.1.1.2/24       | ISP1 Network    |
+| BGP Router  | eth1 (ISP2)               | 10.2.2.2/24       | ISP2 Network    |
+| BGP Router  | eth2 (Internal)           | 192.168.100.10/24 | Internal Network|
+| pfRouter    | eth1 (Internal)           | 192.168.100.2/24  | Internal Network|
+| pfRouter    | eth0 (Client)             | 192.168.200.254/24| Client Network  |
+| Ubuntu Client| eth0                     | 192.168.200.10/24 | Client Network  |
 | pfRouter | eth0 | 192.168.100.2/24 | Internal Network |
 | pfRouter | eth1 | 192.168.200.1/24 | Client Network |
 | Client | eth0 | 192.168.200.10/24 | Client Network |
