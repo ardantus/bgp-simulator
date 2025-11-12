@@ -112,14 +112,9 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    command: >
-      bash -c "
-        apt-get update && 
-        apt-get install -y iproute2 iputils-ping tcpdump traceroute curl wget net-tools dnsutils &&
-        ip route del default || true &&
-        ip route add default via 192.168.200.254 &&
-        tail -f /dev/null
-      "
+    volumes:
+      - ./scripts/client-init.sh:/usr/local/bin/client-init.sh:ro
+    command: /usr/local/bin/client-init.sh
     depends_on:
       - pfrouter
     restart: unless-stopped
