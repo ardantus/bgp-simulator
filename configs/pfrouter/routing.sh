@@ -22,11 +22,8 @@ ip route add default via 192.168.100.10 dev eth1 || ip route add default via 192
 # ip route add 10.1.1.0/24 via 192.168.100.10
 # ip route add 10.2.2.0/24 via 192.168.100.10
 
-# Set up NAT (optional - for internet access simulation)
-# Note: eth0 is the client-facing interface (192.168.200.0/24)
-#       eth1 is the internal/external interface toward the BGP router (192.168.100.0/24)
-# We want to masquerade traffic leaving via eth1 and allow forwarding from eth0 -> eth1
-iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE || echo "Failed to add POSTROUTING rule"
+# Forwarding rules (pfrouter should forward client traffic to the internal/BGP side)
+# Note: NAT (MASQUERADE) is intentionally left to the ISP container to be more realistic.
 iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT || true
 iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT || true
 

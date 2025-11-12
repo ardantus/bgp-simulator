@@ -5,6 +5,7 @@ RUN apt-get update && \
     apt-get install -y \
     bird2 \
     iproute2 \
+    iptables \
     iputils-ping \
     tcpdump \
     traceroute \

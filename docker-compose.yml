@@ -14,7 +14,15 @@ services:
       - NET_RAW
     volumes:
       - ./configs/isp1/bird.conf:/etc/bird/bird.conf:ro
-    command: bird -f -c /etc/bird/bird.conf -d
+    command: >
+      bash -c "
+        # Ensure networking tools exist, enable forwarding and NAT at ISP
+        apt-get update -qq && apt-get install -y iproute2 iptables iputils-ping -qq || true && \
+        sysctl -w net.ipv4.ip_forward=1 || true && \
+        # Masquerade outbound from ISP to host (use container's outbound interface, usually eth0)
+        iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE || true && \
+        exec bird -f -c /etc/bird/bird.conf -d
+      "
     restart: unless-stopped
 
   # ISP2 - Simulated upstream provider 2
@@ -32,7 +40,13 @@ services:
       - NET_RAW
     volumes:
       - ./configs/isp2/bird.conf:/etc/bird/bird.conf:ro
-    command: bird -f -c /etc/bird/bird.conf -d
+    command: >
+      bash -c "
+        apt-get update -qq && apt-get install -y iproute2 iptables iputils-ping -qq || true && \
+        sysctl -w net.ipv4.ip_forward=1 || true && \
+        iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE || true && \
+        exec bird -f -c /etc/bird/bird.conf -d
+      "
     restart: unless-stopped
 
   # BGP Router - Main router connecting to both ISPs
