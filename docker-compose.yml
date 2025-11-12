@@ -1,5 +1,4 @@
 services:
-  # ISP1 - Simulated upstream provider 1
   isp1:
     build:
       context: .
@@ -16,16 +15,13 @@ services:
       - ./configs/isp1/bird.conf:/etc/bird/bird.conf:ro
     command: >
       bash -c "
-        # Ensure networking tools exist, enable forwarding and NAT at ISP
         apt-get update -qq && apt-get install -y iproute2 iptables iputils-ping -qq || true && \
         sysctl -w net.ipv4.ip_forward=1 || true && \
-        # Masquerade outbound from ISP to host (use container's outbound interface, usually eth0)
         iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE || true && \
         exec bird -f -c /etc/bird/bird.conf -d
       "
     restart: unless-stopped
 
-  # ISP2 - Simulated upstream provider 2
   isp2:
     build:
       context: .
@@ -49,7 +45,6 @@ services:
       "
     restart: unless-stopped
 
-  # BGP Router - Main router connecting to both ISPs
   bgp-router:
     build:
       context: .
@@ -74,7 +69,6 @@ services:
       - isp2
     restart: unless-stopped
 
-  # pfRouter - Linux router for packet forwarding
   pfrouter:
     image: ubuntu:22.04
     container_name: pfrouter
@@ -91,19 +85,20 @@ services:
       - ./configs/pfrouter/routing.sh:/routing.sh:ro
     command: >
       bash -c "
-        apt-get update && 
-        apt-get install -y iproute2 iputils-ping tcpdump traceroute iptables net-tools &&
-        chmod +x /routing.sh 2>/dev/null || true &&
-        /routing.sh &&
+        apt-get update && \
+        apt-get install -y iproute2 iputils-ping tcpdump traceroute iptables net-tools && \
+        chmod +x /routing.sh 2>/dev/null || true && \
+        /routing.sh && \
         tail -f /dev/null
       "
     depends_on:
       - bgp-router
     restart: unless-stopped
 
-  # Ubuntu Client - Test client with networking tools
   client:
-    image: ubuntu:22.04
+    build:
+      context: .
+      dockerfile: Dockerfile.client
     container_name: client
     hostname: client
     networks:
@@ -112,9 +107,6 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    volumes:
-      - ./scripts/client-init.sh:/usr/local/bin/client-init.sh:ro
-    command: /usr/local/bin/client-init.sh
     depends_on:
       - pfrouter
     restart: unless-stopped
@@ -125,19 +117,19 @@ networks:
     ipam:
       config:
         - subnet: 10.1.1.0/24
-  
+
   isp2_network:
     driver: bridge
     ipam:
       config:
         - subnet: 10.2.2.0/24
-  
+
   internal_network:
     driver: bridge
     ipam:
       config:
         - subnet: 192.168.100.0/24
-  
+
   client_network:
     driver: bridge
     ipam:
