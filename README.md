@@ -45,6 +45,11 @@ Project ini adalah simulator BIRD BGP router menggunakan Docker Compose untuk pe
 - **Fungsi**: Container untuk testing dan troubleshooting
 - **Tools**: traceroute, ping, curl, netstat, ip tools
 
+## Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)**: Panduan cepat untuk memulai
+- **[SCENARIOS.md](SCENARIOS.md)**: 10+ skenario pembelajaran BGP dengan contoh lengkap
+
 ## Prerequisites
 
 - Docker Engine (versi 20.10 atau lebih baru)
